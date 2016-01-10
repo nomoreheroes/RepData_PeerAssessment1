@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+<title>Reproducible Research: Peer Assessment 1</title>
+
+<script src="PA1_template_files/jquery-1.11.0/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="PA1_template_files/bootstrap-3.3.1/css/bootstrap.min.css" rel="stylesheet" />
+<script src="PA1_template_files/bootstrap-3.3.1/js/bootstrap.min.js"></script>
+<script src="PA1_template_files/bootstrap-3.3.1/shim/html5shiv.min.js"></script>
+<script src="PA1_template_files/bootstrap-3.3.1/shim/respond.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet"
+      href="PA1_template_files/highlight/default.css"
+      type="text/css" />
+<script src="PA1_template_files/highlight/highlight.js"></script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img { 
+  max-width:100%; 
+  height: auto; 
+}
+</style>
+<div class="container-fluid main-container">
+
+
+<div id="header">
+<h1 class="title">Reproducible Research: Peer Assessment 1</h1>
+</div>
+
+
+<div id="loading-and-preprocessing-the-data" class="section level2">
+<h2>Loading and preprocessing the data</h2>
+<ul>
+<li>load needed packages</li>
+<li>load the data file</li>
+</ul>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.2.3</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## Следующие объекты скрыты от &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## Следующие объекты скрыты от &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>library(ggplot2)</code></pre>
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 3.2.3</code></pre>
+<pre class="r"><code>rs = read.csv(&quot;activity.csv&quot;)</code></pre>
+</div>
+<div id="what-is-mean-total-number-of-steps-taken-per-day" class="section level2">
+<h2>What is mean total number of steps taken per day?</h2>
+<ul>
+<li>group the dataset by date</li>
+<li>summarise the grouped data by sum of steps</li>
+<li>create a histogram</li>
+<li>calculate the mean and the median of the total number of steps taken per day.</li>
+</ul>
+<pre class="r"><code>rs.q.1 = rs %&gt;% 
+  group_by(date) %&gt;% #group the data
+    summarize(sum=sum(steps)) %&gt;% #summarize it
+      .[[&quot;sum&quot;]] #get the sum column
+
+#create a histogram
+hist(rs.q.1, xlab=&quot;Number of steps, per day&quot;,col=1:5,main=&quot;Total number of steps per day&quot;)</code></pre>
+<p><img src="PA1_template_files/figure-html/unnamed-chunk-2-1.png" /><br /></p>
+<pre class="r"><code>#calculate and print the mean and the median
+mean.steps = mean(rs.q.1,na.rm=T)
+median.steps = median(rs.q.1,na.rm=T)
+print(mean.steps)</code></pre>
+<pre><code>## [1] 10766.19</code></pre>
+<pre class="r"><code>print(median.steps)</code></pre>
+<pre><code>## [1] 10765</code></pre>
+</div>
+<div id="what-is-the-average-daily-activity-pattern" class="section level2">
+<h2>What is the average daily activity pattern?</h2>
+<ul>
+<li>group the data by an interval</li>
+<li>summarise the grouped data by the mean of steps</li>
+<li>Make a time series plot (i.e. type = “l”) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis).</li>
+</ul>
+<pre class="r"><code>rs.q.2 = rs %&gt;% 
+  group_by(interval) %&gt;% #group the data
+    summarize(mean.steps=mean(steps,na.rm=T)) #summarize it
+
+#create the time-series plot
+plot(rs.q.2$interval,rs.q.2$mean.steps, type=&quot;l&quot;,xlab=&quot;Interval&quot;, ylab=&quot;Average number of steps&quot;, main=&quot;Average number of steps averaged over all days&quot;)</code></pre>
+<p><img src="PA1_template_files/figure-html/unnamed-chunk-3-1.png" /><br /></p>
+<pre class="r"><code>#search for the interval containing the maximum number of steps
+max.steps.interval = rs.q.2[which.max(rs.q.2$mean.steps),]
+print(max.steps.interval)</code></pre>
+<pre><code>## Source: local data frame [1 x 2]
+## 
+##   interval mean.steps
+##      (int)      (dbl)
+## 1      835   206.1698</code></pre>
+</div>
+<div id="imputing-missing-values" class="section level2">
+<h2>Imputing missing values</h2>
+<ul>
+<li>Calculate the total number of missing values in the dataset</li>
+<li>Impute the missing values using the daily mean</li>
+<li>Make a histogram of the total number of steps taken each day</li>
+<li>Calculate and report the mean and median total number of steps taken per day and compare it with the same values, calculated using the original dataset</li>
+</ul>
+<pre class="r"><code>#calculate the total number of missing values
+na.quantity = sum(!complete.cases(rs))
+print(na.quantity)</code></pre>
+<pre><code>## [1] 2304</code></pre>
+<pre class="r"><code>#copy the original dataset to the new one
+rs.q.3 = rbind(data.frame(),rs)
+
+#impute missing values using daily means
+for(row in 1:nrow(rs)) {
+  if(is.na(rs[row,&quot;steps&quot;])) {
+    c.date = rs[row,&quot;date&quot;]
+    rs.q.3[row,&quot;steps&quot;] = mean(rs[&quot;date&quot;==c.date,&quot;steps&quot;],na.rm=T)
+  }
+}
+
+rs.q.3 = rs.q.3 %&gt;%
+  group_by(date) %&gt;% #group by date
+  summarize(sum=sum(steps)) %&gt;% #summarise it
+  .[[&quot;sum&quot;]] #get the sum column
+
+#create a histogram
+hist(rs.q.3, xlab=&quot;Number of steps, per day&quot;,col=1:5,main=&quot;Total number of steps per day&quot;)</code></pre>
+<p><img src="PA1_template_files/figure-html/unnamed-chunk-4-1.png" /><br /></p>
+<pre class="r"><code>#calculate the mean and the median of the imputed dataset
+mean.steps.imputed = mean(rs.q.3,na.rm=T)
+median.steps.imputed = median(rs.q.3,na.rm=T)
+
+answers = c(mean.steps,mean.steps.imputed,median.steps,median.steps.imputed)
+names(answers) = c(&quot;mean of the original&quot;,&quot;mean of the imputed&quot;,&quot;median of the original&quot;,&quot;median of the imputed&quot;)
+print(answers)</code></pre>
+<pre><code>##   mean of the original    mean of the imputed median of the original 
+##               10766.19               10766.19               10765.00 
+##  median of the imputed 
+##               10765.00</code></pre>
+</div>
+<div id="are-there-differences-in-activity-patterns-between-weekdays-and-weekends" class="section level2">
+<h2>Are there differences in activity patterns between weekdays and weekends?</h2>
+<ul>
+<li>Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.</li>
+<li>Make a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis)</li>
+</ul>
+<pre class="r"><code>#use the function for separating weekdays from weekands
+weekends.or.weekdays = function(x){
+  w = as.POSIXlt(as.Date(x, &quot;%Y-%m-%d&quot;))$wday
+  if (w == 0 | w == 6) {
+    &quot;weekend&quot;
+  } else &quot;weekday&quot;
+}
+#create the new factor variable &quot;day&quot;
+rs$day = vapply(rs$date,weekends.or.weekdays,character(1))
+rs$day = as.factor(rs$day)
+
+rs.q.4 = rs %&gt;%
+  group_by(interval,day) %&gt;% #group by an interval and a day
+    summarize(mean.steps=mean(steps,na.rm=T)) #summarize it, using mean function
+
+#create a plot
+p = qplot(interval, mean.steps, data=rs.q.4, geom=c(&quot;line&quot;), xlab=&quot;Interval&quot;,ylab=&quot;Number of steps&quot;,facets=.~day)
+print(p)</code></pre>
+<p><img src="PA1_template_files/figure-html/unnamed-chunk-5-1.png" /><br /></p>
+</div>
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,8 +1,9 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
+title: 'Reproducible Research: Peer Assessment 1'
+output:
+  word_document: default
   html_document:
-    keep_md: true
+    keep_md: yes
 ---
 
 ## Loading and preprocessing the data
@@ -48,7 +49,7 @@ rs.q.2 = rs %>%
     summarize(mean.steps=mean(steps,na.rm=T)) #summarize it
 
 #create the time-series plot
-plot(rs.q.2$interval,rs$mean.steps, type="l",xlab="Interval", ylab="Average number of steps", main="Average number of steps averaged over all days")
+plot(rs.q.2$interval,rs.q.2$mean.steps, type="l",xlab="Interval", ylab="Average number of steps", main="Average number of steps averaged over all days")
 
 #search for the interval containing the maximum number of steps
 max.steps.interval = rs.q.2[which.max(rs.q.2$mean.steps),]
